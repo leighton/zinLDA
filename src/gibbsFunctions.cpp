@@ -91,12 +91,12 @@ NumericVector sampleZProbRcpp(int d, int w, IntegerVector kVect, arma::mat delta
       }
       
       if (p(i) < 0) {
-	      Rcout << "The value for p(i) is : " << p(i) << "\n";	
+	Rcout << "The value for p(i) is : " << p(i) << "\n";	
        	Rcout << "The value for d is : " << d << "\n";	 
-	      Rcout << "The value for k is : " << k << "\n";
-	      Rcout << "The value for nd(d,k) is : " << nd(d,k) << "\n";
-	      Rcout << "The value for vkCondition : "	<< vkCondition << "\n";
-	      Rcout << "The value for k1Condition : " << k1Condition << "\n";
+	Rcout << "The value for k is : " << k << "\n";
+	Rcout << "The value for nd(d,k) is : " << nd(d,k) << "\n";
+	Rcout << "The value for vkCondition : "	<< vkCondition << "\n";
+	Rcout << "The value for k1Condition : " << k1Condition << "\n";
       	Rcout << "The values for sum(nwK[seq(w+1, V)]) : " << sum(nwK[seq(w+1, V)])  << "\n";
       	Rcout << "The values for (a + nw(w, k)) : " << (a + nw(w, k))  << "\n";
       	Rcout << "The values for (a + nw(w, k) + b + nwKwvSum) : " << (a + nw(w, k) + b + sum(nwK[seq(w+1, V)])) << "\n";
@@ -133,7 +133,7 @@ List gibbSampleZRcpp(int D, List z, NumericMatrix nw, IntegerMatrix nd, IntegerV
       String taxon = taxaD(n);                      // nth taxon in sample d
       int w = findStringLoc(rownames(nwDC), taxon); // int value (row location) for nth taxon in sample d
       if ( ndDC(d,community)-1 >= 0 && nwDC(w, community)-1 >= 0 ) {	
-	      nwDC(w, community) -= 1;                      // - 1 bc gibbs sampling for -ith assignment
+	nwDC(w, community) -= 1;                      // - 1 bc gibbs sampling for -ith assignment
       	ndDC(d, community) -= 1;                      // - 1 bc gibbs sampling for -ith assignment
       	ndsum(d)     -= 1;                            // - 1 bc gibbs sampling for -ith assignment
 
@@ -154,7 +154,7 @@ List gibbSampleZRcpp(int D, List z, NumericMatrix nw, IntegerMatrix nd, IntegerV
       	ndsum(d)      += 1;       // +1 for new sampled community assignment
       } else {
         //TODO: compute fraction of skipped 
-	      //Rcout << "skipping" << "\n";
+	//Rcout << "skipping" << "\n";
       }
     }
   }
