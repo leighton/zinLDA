@@ -89,6 +89,20 @@ NumericVector sampleZProbRcpp(int d, int w, IntegerVector kVect, arma::mat delta
         p(i) = ((a + nw(w, k))/(a + nw(w, k) + b + nwKwvSum)) * // replace global pTemp w calculated value
           bijRatioProd * ((nd(d, k) + alpha)/(ndsum(d) + K*alpha));
       }
+      
+      if (p(i) < 0) {
+	      Rcout << "The value for p(i) is : " << p(i) << "\n";	
+       	Rcout << "The value for d is : " << d << "\n";	 
+	      Rcout << "The value for k is : " << k << "\n";
+	      Rcout << "The value for nd(d,k) is : " << nd(d,k) << "\n";
+	      Rcout << "The value for vkCondition : "	<< vkCondition << "\n";
+	      Rcout << "The value for k1Condition : " << k1Condition << "\n";
+      	Rcout << "The values for sum(nwK[seq(w+1, V)]) : " << sum(nwK[seq(w+1, V)])  << "\n";
+      	Rcout << "The values for (a + nw(w, k)) : " << (a + nw(w, k))  << "\n";
+      	Rcout << "The values for (a + nw(w, k) + b + nwKwvSum) : " << (a + nw(w, k) + b + sum(nwK[seq(w+1, V)])) << "\n";
+      	Rcout << "The values for (nd(d, k) + alpha) : " << (nd(d, k) + alpha)  << "\n";
+      	Rcout << "The values for (ndsum(d) + K*alpha) : " << (ndsum(d) + K*alpha) << "\n";
+      }
     }
     else p(i) = 0; // if delta == 1 then p(z) == 0, replace global pTemp
   }
@@ -118,21 +132,30 @@ List gibbSampleZRcpp(int D, List z, NumericMatrix nw, IntegerMatrix nd, IntegerV
       StringVector taxaD = zd.names();              // taxa for sample d
       String taxon = taxaD(n);                      // nth taxon in sample d
       int w = findStringLoc(rownames(nwDC), taxon); // int value (row location) for nth taxon in sample d
-      nwDC(w, community) -= 1;                      // - 1 bc gibbs sampling for -ith assignment
-      ndDC(d, community) -= 1;                      // - 1 bc gibbs sampling for -ith assignment
-      ndsum(d)     -= 1;                            // - 1 bc gibbs sampling for -ith assignment
+      if ( ndDC(d,community)-1 >= 0 && nwDC(w, community)-1 >= 0 ) {	
+	      nwDC(w, community) -= 1;                      // - 1 bc gibbs sampling for -ith assignment
+      	ndDC(d, community) -= 1;                      // - 1 bc gibbs sampling for -ith assignment
+      	ndsum(d)     -= 1;                            // - 1 bc gibbs sampling for -ith assignment
 
-      NumericVector p = sampleZProbRcpp(d, w, kVect, delta, nwDC, ndDC, ndsum, K, a, b, alpha, V);
+      	NumericVector p = sampleZProbRcpp(d, w, kVect, delta, nwDC, ndDC, ndsum, K, a, b, alpha, V);
 
-      IntegerVector zSampled = rmultinomRcpp(p); // rmultinomial only taking n = 1 size = 1
+      	IntegerVector zSampled = rmultinomRcpp(p); // rmultinomial only taking n = 1 size = 1
 
-      int scommunity = which_max(zSampled);
+      	int scommunity = which_max(zSampled);
 
-      zd(n) = scommunity;       // update the community for the nth taxon in the dth sample
-      zDC[d] = zd;              // update z with the community for the nth taxon in the dth sample
-      nwDC(w, scommunity) += 1; // +1 for new sampled community assignment
-      ndDC(d, scommunity) += 1; // +1 for new sampled community assignment
-      ndsum(d)      += 1;       // +1 for new sampled community assignment
+      	zd(n) = scommunity;       // update the community for the nth taxon in the dth sample
+      	zDC[d] = zd;              // update z with the community for the nth taxon in the dth sample
+      	if (scommunity < 0) {
+      		Rcout << "The value of zSampled : " << zSampled << "\n";	
+		      Rcout << "The value of p : " << p << "\n";	
+      	}
+      	nwDC(w, scommunity) += 1; // +1 for new sampled community assignment
+      	ndDC(d, scommunity) += 1; // +1 for new sampled community assignment
+      	ndsum(d)      += 1;       // +1 for new sampled community assignment
+      } else {
+        //TODO: compute fraction of skipped 
+	      //Rcout << "skipping" << "\n";
+      }
     }
   }
   return(Rcpp::List::create(Rcpp::Named("z") = zDC,
